@@ -25,6 +25,7 @@ function useGamepads() {
   const [incomingValue, setIncomingValue] = useState<number>(0);
   const [gamepads, setGamepads] = useState<Gamepad[]>([]);
   const [socket, setSocket] = useState<Socket>();
+  const [tmpValue, setTmpValue] = useState<number>(0);
   const prevGamepadStatesRef = useRef<any[]>([]);
 
   const animationRef = useRef<number>();
@@ -46,11 +47,12 @@ function useGamepads() {
       const leftTriggerValue = gamepad.buttons[leftTriggerIndex].value;
 
       if (leftTriggerValue > 0.01) {
-        console.log("Left Trigger Value:", leftTriggerValue);
-        ``;
+        setTmpValue((prev) => Math.min(prev + 0.1, 1));
         emitVibration({
           value: leftTriggerValue,
         });
+      } else {
+        setTmpValue((prev) => Math.max(prev - 0.1, 0));
       }
     });
 
@@ -147,6 +149,7 @@ function useGamepads() {
     gamepads,
     firstTime,
     incomingValue,
+    tmpValue,
   };
 }
 
