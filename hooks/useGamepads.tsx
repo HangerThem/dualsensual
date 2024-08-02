@@ -9,6 +9,7 @@ type Props = {
 
 const handleVibration = ({ gamepads, type, params: effectParams }: Props) => {
   for (const gamepad of gamepads) {
+    console.log("gamepad", gamepad);
     const haptics = gamepad.vibrationActuator;
     if (haptics) {
       haptics.playEffect(type, {
@@ -90,14 +91,14 @@ function useGamepads() {
     const appId = Math.random().toString(36).substring(7);
     setAppId(appId);
     const newSocket = io("https://dslsocket.hangerthem.com");
-    newSocket.on("vibrate", ({ value }) => {
-      console.log("vibrate", value);
+    newSocket.on("vibrate", ({ props }) => {
+      console.log("vibrate", props.value);
       handleVibration({
         gamepads: navigator
           .getGamepads()
           .filter((g) => !!g),
         type: "dual-rumble",
-        params: { duration: 500, strongMagnitude: value, weakMagnitude: value },
+        params: { duration: 500, strongMagnitude: props.value, weakMagnitude: props.value },
       });
     });
     setSocket(newSocket);
