@@ -9,7 +9,6 @@ type Props = {
 
 const handleVibration = ({ gamepads, type, params: effectParams }: Props) => {
   for (const gamepad of gamepads) {
-    console.log("gamepad", gamepad);
     const haptics = gamepad.vibrationActuator;
     if (haptics) {
       haptics.playEffect(type, {
@@ -21,22 +20,21 @@ const handleVibration = ({ gamepads, type, params: effectParams }: Props) => {
 };
 
 function useGamepads() {
+  const [firstTime, setFirstTime] = useState(true);
   const [currentGamepads, setGamepadsInternal] = useState<Gamepad[]>([]);
-  const [appId, setAppId] = useState<string>();
+  const [incomingValue, setIncomingValue] = useState<number>(0);
   const [gamepads, setGamepads] = useState<Gamepad[]>([]);
   const [socket, setSocket] = useState<Socket>();
   const prevGamepadStatesRef = useRef<any[]>([]);
 
   const animationRef = useRef<number>();
 
-  const emitVibration = useCallback(
-    (props: { value: number }) => {
-      if (socket) {
-        socket.emit("trigger", { props });
-      }
-    },
-    [socket]
-  );
+  const emitVibration = useCallback((props: { value: number }) => {
+    if (socket) {
+      socket.emit("trigger", { props });
+    }
+    setFirstTime(false);
+  }, [socket]);
 
   const gameLoop = useCallback(() => {
     const connectedGamepads = navigator.getGamepads().filter((g) => !!g);
@@ -45,6 +43,7 @@ function useGamepads() {
       const leftTriggerValue = gamepad.buttons[leftTriggerIndex].value;
 
       if (leftTriggerValue > 0.01) {
+        console.log("Left Trigger Value:", leftTriggerValue);``
         emitVibration({
           value: leftTriggerValue,
         });
@@ -88,11 +87,9 @@ function useGamepads() {
   );
 
   useEffect(() => {
-    const appId = Math.random().toString(36).substring(7);
-    setAppId(appId);
     const newSocket = io("https://dslsocket.hangerthem.com");
     newSocket.on("vibrate", ({ props }) => {
-      console.log("vibrate", props.value);
+      setIncomingValue(props.value);
       handleVibration({
         gamepads: navigator
           .getGamepads()
@@ -135,7 +132,11 @@ function useGamepads() {
     };
   }, [handleGamepadConnected, handleGamepadDisconnected]);
 
-  return gamepads;
+  return {
+    gamepads,
+    firstTime,
+    incomingValue,
+  };
 }
 
 export default useGamepads;
