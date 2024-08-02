@@ -39,16 +39,16 @@ const reportPressed = () => {
             .at(toPlayIdx)
             .vibrationActuator.playEffect("trigger-rumble", {
               startDelay: 0,
-              duration: 50,
+              duration: 100,
               weakMagnitude: 1.0,
               strongMagnitude: 1.0,
-              leftTrigger: gamepad.buttons.at(7).value,
-              rightTrigger: gamepad.buttons.at(6).value,
+              leftTrigger: gamepad.buttons.at(6).value,
+              rightTrigger: gamepad.buttons.at(7).value,
             });
         } else if (pressed === 0) {
           gamepads.at(toPlayIdx).vibrationActuator.playEffect("dual-rumble", {
             startDelay: 0,
-            duration: 50,
+            duration: 100,
             weakMagnitude: 1,
             strongMagnitude: 1,
           });
