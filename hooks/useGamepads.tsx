@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 
 type Props = {
-  gamepads: Gamepad[]
+  gamepads: Gamepad[];
   type: GamepadHapticEffectType;
   params: GamepadEffectParameters;
 };
@@ -29,12 +29,15 @@ function useGamepads() {
 
   const animationRef = useRef<number>();
 
-  const emitVibration = useCallback((props: { value: number }) => {
-    if (socket) {
-      socket.emit("trigger", { props });
-    }
-    setFirstTime(false);
-  }, [socket]);
+  const emitVibration = useCallback(
+    (props: { value: number }) => {
+      if (socket) {
+        socket.emit("trigger", { props });
+      }
+      setFirstTime(false);
+    },
+    [socket],
+  );
 
   const gameLoop = useCallback(() => {
     const connectedGamepads = navigator.getGamepads().filter((g) => !!g);
@@ -43,7 +46,8 @@ function useGamepads() {
       const leftTriggerValue = gamepad.buttons[leftTriggerIndex].value;
 
       if (leftTriggerValue > 0.01) {
-        console.log("Left Trigger Value:", leftTriggerValue);``
+        console.log("Left Trigger Value:", leftTriggerValue);
+        ``;
         emitVibration({
           value: leftTriggerValue,
         });
@@ -60,9 +64,14 @@ function useGamepads() {
   }, [emitVibration]);
 
   useEffect(() => {
-    if (JSON.stringify(gamepads) !== JSON.stringify(currentGamepads)) {
-      setGamepads(currentGamepads);
-    }
+    // todo(ft): figure out caching
+    // if (
+    //   JSON.stringify(gamepads.map((gamepad) => gamepad.buttons)) !==
+    //   JSON.stringify(currentGamepads.map((gamepad) => gamepad.buttons))
+    // ) {
+    // console.log("Gamepads changed:", currentGamepads);
+    setGamepads(currentGamepads);
+    // }
   }, [currentGamepads, gamepads]);
 
   const updateGamepads = useCallback(() => {
@@ -75,7 +84,7 @@ function useGamepads() {
       console.log("Gamepad connected:", event.gamepad);
       updateGamepads();
     },
-    [updateGamepads]
+    [updateGamepads],
   );
 
   const handleGamepadDisconnected = useCallback(
@@ -83,7 +92,7 @@ function useGamepads() {
       console.log("Gamepad disconnected:", event.gamepad);
       updateGamepads();
     },
-    [updateGamepads]
+    [updateGamepads],
   );
 
   useEffect(() => {
@@ -91,11 +100,13 @@ function useGamepads() {
     newSocket.on("vibrate", ({ props }) => {
       setIncomingValue(props.value);
       handleVibration({
-        gamepads: navigator
-          .getGamepads()
-          .filter((g) => !!g),
+        gamepads: navigator.getGamepads().filter((g) => !!g),
         type: "dual-rumble",
-        params: { duration: 500, strongMagnitude: props.value, weakMagnitude: props.value },
+        params: {
+          duration: 500,
+          strongMagnitude: props.value,
+          weakMagnitude: props.value,
+        },
       });
     });
     setSocket(newSocket);
@@ -127,7 +138,7 @@ function useGamepads() {
       window.removeEventListener("gamepadconnected", handleGamepadConnected);
       window.removeEventListener(
         "gamepaddisconnected",
-        handleGamepadDisconnected
+        handleGamepadDisconnected,
       );
     };
   }, [handleGamepadConnected, handleGamepadDisconnected]);
